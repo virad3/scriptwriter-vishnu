@@ -4,12 +4,13 @@ import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 // NOTE: For production, you must replace these with your actual Firebase project keys.
 // In this demo environment, the app will gracefully fallback to a Mock User if these keys are invalid.
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY || "YOUR_API_KEY_HERE",
-  authDomain: "writeroom-demo.firebaseapp.com",
-  projectId: "writeroom-demo",
-  storageBucket: "writeroom-demo.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
+  apiKey: "AIzaSyAJCXKYy18pQlNqOG-YgPjs61iODGcE48E",
+  authDomain: "writeroom-d7374.firebaseapp.com",
+  projectId: "writeroom-d7374",
+  storageBucket: "writeroom-d7374.firebasestorage.app",
+  messagingSenderId: "819720519948",
+  appId: "1:819720519948:web:3e743bd4203c102631c929",
+  measurementId: "G-RPP8CXZF6N"
 };
 
 // Initialize Firebase
