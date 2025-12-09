@@ -1,3 +1,4 @@
+
 export type ElementType = 
   | 'scene-heading'
   | 'action'
@@ -31,15 +32,43 @@ export interface CharacterProfile {
   name: string;
   role: string;
   traits: string[];
-  voice?: string;
+  voice?: string; // Description of how they speak
+  bio?: string;
+}
+
+export interface LocationItem {
+  id: string;
+  name: string;
+  description: string;
+  sights: string;
+  sounds: string;
+}
+
+export interface ResearchItem {
+  id: string;
+  topic: string;
+  content: string;
+  sourceUrl?: string;
+  tags: string[];
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  lastModified: number;
+  author?: string;
+  logline?: string;
+  collaborators?: string[]; // List of emails
 }
 
 export interface AppState {
-  view: 'write' | 'outline' | 'analysis' | 'characters';
+  view: 'write' | 'outline' | 'analysis' | 'characters' | 'locations' | 'research';
   projectTitle: string;
   script: ScriptElement[];
   beats: BeatCard[];
   characters: CharacterProfile[];
+  locations: LocationItem[];
+  research: ResearchItem[];
   sidebarOpen: boolean;
   aiPanelOpen: boolean;
 }

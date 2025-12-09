@@ -31,11 +31,11 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ script }) => {
     .slice(0, 10); // Top 10 characters
 
   return (
-    <div className="p-8 h-full overflow-y-auto bg-[#1e1e1e] text-white">
-        <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-6">
+    <div className="p-8 h-full overflow-y-auto bg-[#0f172a] text-white">
+        <div className="flex justify-between items-center mb-8 border-b border-slate-700 pb-6">
             <div>
                 <h2 className="text-2xl font-bold mb-1">Deep Analysis</h2>
-                <p className="text-gray-400 text-sm">AI-powered insights into your screenplay's structure and voice.</p>
+                <p className="text-slate-400 text-sm">AI-powered insights into your screenplay's structure and voice.</p>
             </div>
             <button 
                 onClick={runAnalysis}
@@ -48,18 +48,18 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ script }) => {
         </div>
 
         <div className="grid grid-cols-2 gap-8 mb-8">
-            <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-                <h3 className="flex items-center gap-2 font-bold mb-6 text-gray-300">
+            <div className="bg-[#1e293b] p-6 rounded-xl border border-slate-700">
+                <h3 className="flex items-center gap-2 font-bold mb-6 text-slate-300">
                     <MessageSquare size={18} /> Dialogue Distribution
                 </h3>
                 <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData}>
-                            <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                            <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
+                            <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                            <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                             <Tooltip 
-                                contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
-                                itemStyle={{ color: '#e5e7eb' }}
+                                contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '8px' }}
+                                itemStyle={{ color: '#e2e8f0' }}
                             />
                             <Bar dataKey="lines" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                         </BarChart>
@@ -67,8 +67,8 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ script }) => {
                 </div>
             </div>
 
-            <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-                <h3 className="flex items-center gap-2 font-bold mb-6 text-gray-300">
+            <div className="bg-[#1e293b] p-6 rounded-xl border border-slate-700">
+                <h3 className="flex items-center gap-2 font-bold mb-6 text-slate-300">
                     <Activity size={18} /> Emotional Arc (AI Estimated)
                 </h3>
                 {data?.emotionalArc ? (
@@ -78,14 +78,14 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ script }) => {
                                 <XAxis dataKey="scene" hide />
                                 <YAxis domain={[0, 10]} hide />
                                 <Tooltip 
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }} 
+                                    contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '8px' }} 
                                 />
                                 <Line type="monotone" dataKey="score" stroke="#10b981" strokeWidth={3} dot={false} />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
                 ) : (
-                    <div className="h-64 flex items-center justify-center text-gray-500 italic border-2 border-dashed border-gray-700 rounded-lg">
+                    <div className="h-64 flex items-center justify-center text-slate-500 italic border-2 border-dashed border-slate-700 rounded-lg">
                         Run analysis to see emotional mapping
                     </div>
                 )}
@@ -94,31 +94,31 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ script }) => {
 
         {data && (
             <div className="grid grid-cols-2 gap-8">
-                <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                <div className="bg-[#1e293b] p-6 rounded-xl border border-slate-700">
                     <h3 className="flex items-center gap-2 font-bold mb-4 text-orange-400">
                         <AlertTriangle size={18} /> Cliché Detection
                     </h3>
                     <ul className="space-y-2">
                         {data.cliches?.map((c: string, i: number) => (
-                            <li key={i} className="flex gap-3 items-start text-sm text-gray-300">
+                            <li key={i} className="flex gap-3 items-start text-sm text-slate-300">
                                 <span className="text-orange-500">•</span> {c}
                             </li>
                         ))}
                     </ul>
                 </div>
 
-                <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                <div className="bg-[#1e293b] p-6 rounded-xl border border-slate-700">
                     <h3 className="flex items-center gap-2 font-bold mb-4 text-blue-400">
                         <BarChart2 size={18} /> Pacing & Structure
                     </h3>
-                    <p className="text-sm text-gray-300 leading-relaxed">
+                    <p className="text-sm text-slate-300 leading-relaxed">
                         {data.pacing}
                     </p>
                     <div className="mt-4">
-                         <h4 className="font-bold text-xs uppercase text-gray-500 mb-2">Suggestions</h4>
+                         <h4 className="font-bold text-xs uppercase text-slate-500 mb-2">Suggestions</h4>
                          <ul className="space-y-1">
                             {data.suggestions?.map((s: string, i: number) => (
-                                <li key={i} className="text-sm text-gray-400 italic">"{s}"</li>
+                                <li key={i} className="text-sm text-slate-400 italic">"{s}"</li>
                             ))}
                          </ul>
                     </div>

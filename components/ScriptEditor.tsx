@@ -14,9 +14,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ script, setScript, activeEl
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (activeElementId && containerRef.current) {
-      // Optional: Auto scroll logic can go here
-    }
+    // Optional scroll logic
   }, [activeElementId]);
 
   const updateElement = (id: string, content: string) => {
@@ -91,94 +89,90 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ script, setScript, activeEl
 
   const getElementStyles = (type: ElementType, isActive: boolean) => {
     let containerClass = "relative group transition-all duration-200 outline-none ";
-    let inputClass = "w-full bg-transparent outline-none resize-none overflow-hidden font-script text-lg ";
+    let inputClass = "w-full bg-transparent outline-none resize-none overflow-hidden font-script text-lg leading-relaxed ";
     let placeholder = "";
 
     // Highlight active line
     const activeClass = isActive 
-        ? " bg-gray-800/30 rounded -mx-2 px-2 py-1 shadow-sm border-l-2 border-blue-500" 
-        : " px-2 py-1 border-l-2 border-transparent hover:border-gray-700";
+        ? " bg-blue-50/50 rounded -mx-2 px-2 py-0.5" 
+        : " px-2 py-0.5 border-l-2 border-transparent";
 
     containerClass += activeClass;
 
     if (scriptFormat === 'standard') {
         // --- Standard Hollywood Layout ---
-        containerClass += " w-full mb-2";
+        containerClass += " w-full mb-1";
 
         switch (type) {
             case 'scene-heading':
-                containerClass += " mt-8 mb-4 font-bold text-gray-200 uppercase";
+                containerClass += " mt-6 mb-2 font-bold text-gray-900 uppercase";
                 inputClass += " uppercase tracking-wide";
                 placeholder = "INT. LOCATION - DAY";
                 break;
             case 'action':
-                containerClass += " mb-4 text-gray-300";
+                containerClass += " mb-2 text-gray-900";
                 placeholder = "Action description...";
                 break;
             case 'character':
-                containerClass += " mt-6 mb-0 text-center uppercase font-bold text-gray-200 w-2/3 mx-auto";
+                containerClass += " mt-4 mb-0 text-center uppercase font-bold text-gray-900 w-2/3 mx-auto";
                 inputClass += " text-center uppercase tracking-wider";
                 placeholder = "CHARACTER";
                 break;
             case 'dialogue':
-                containerClass += " mb-4 text-center w-3/4 mx-auto text-gray-300";
+                containerClass += " mb-2 text-center w-3/4 mx-auto text-gray-900";
                 inputClass += " text-left";
                 placeholder = "Dialogue...";
                 break;
             case 'parenthetical':
-                containerClass += " -mt-2 mb-2 text-center w-1/2 mx-auto text-gray-400 italic";
+                containerClass += " -mt-1 mb-1 text-center w-1/2 mx-auto text-gray-600 italic";
                 inputClass += " text-left lowercase";
                 placeholder = "(wryly)";
                 break;
             case 'transition':
-                containerClass += " mt-4 mb-4 text-right font-bold uppercase text-gray-400 mr-8";
+                containerClass += " mt-4 mb-4 text-right font-bold uppercase text-gray-800 mr-8";
                 inputClass += " text-right uppercase";
                 placeholder = "CUT TO:";
                 break;
             case 'shot':
-                containerClass += " mt-4 mb-4 font-bold uppercase text-gray-200";
+                containerClass += " mt-4 mb-4 font-bold uppercase text-gray-900";
                 placeholder = "ANGLE ON";
                 break;
         }
     } else {
         // --- Split / Malayalam Layout ---
-        // Scene Heading is typically full width to separate segments clearly
-        // Left Column: Action, Shot, Transition
-        // Right Column: Character, Dialogue, Parenthetical
-
         switch (type) {
             case 'scene-heading':
-                containerClass += " w-full mt-10 mb-6 font-bold text-gray-200 uppercase border-b border-gray-600 pb-2";
+                containerClass += " w-full mt-8 mb-4 font-bold text-gray-900 uppercase border-b border-gray-300 pb-2";
                 inputClass += " uppercase tracking-wide";
                 placeholder = "INT. LOCATION - DAY";
                 break;
             case 'action':
-                containerClass += " w-[48%] mr-auto mb-4 text-gray-300 pr-4 text-justify";
+                containerClass += " w-[48%] mr-auto mb-2 text-gray-900 pr-4 text-justify";
                 placeholder = "Visual action...";
                 break;
             case 'shot':
-                containerClass += " w-[48%] mr-auto mt-4 mb-2 font-bold uppercase text-gray-200";
+                containerClass += " w-[48%] mr-auto mt-2 mb-2 font-bold uppercase text-gray-900";
                 placeholder = "ANGLE ON";
                 break;
             case 'transition':
-                containerClass += " w-[48%] mr-auto mt-4 mb-4 text-right font-bold uppercase text-gray-400";
+                containerClass += " w-[48%] mr-auto mt-2 mb-2 text-right font-bold uppercase text-gray-800";
                 inputClass += " text-right uppercase";
                 placeholder = "CUT TO:";
                 break;
             
             // Right Side Elements
             case 'character':
-                containerClass += " w-[48%] ml-auto mt-4 mb-1 text-center font-bold text-gray-200 uppercase";
+                containerClass += " w-[48%] ml-auto mt-2 mb-0 text-center font-bold text-gray-900 uppercase";
                 inputClass += " text-center uppercase tracking-wider";
                 placeholder = "CHARACTER";
                 break;
             case 'dialogue':
-                containerClass += " w-[48%] ml-auto mb-4 text-gray-300 pl-4 border-l border-gray-800";
+                containerClass += " w-[48%] ml-auto mb-2 text-gray-900 pl-4 border-l border-gray-200";
                 inputClass += " text-left";
                 placeholder = "Dialogue...";
                 break;
             case 'parenthetical':
-                containerClass += " w-[40%] ml-auto mb-1 text-center italic text-gray-400";
+                containerClass += " w-[40%] ml-auto mb-0 text-center italic text-gray-600";
                 inputClass += " text-center lowercase";
                 placeholder = "(wryly)";
                 break;
@@ -189,57 +183,58 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ script, setScript, activeEl
   };
 
   return (
-    <div 
-        ref={containerRef}
-        className={`w-full mx-auto bg-white min-h-[1200px] shadow-2xl my-8 p-12 pb-32 text-gray-900 transition-all duration-300 ${scriptFormat === 'split' ? 'max-w-7xl' : 'max-w-4xl'}`}
-        style={{ backgroundColor: '#fcfcfc' }}
-    >
-      {script.map((el, i) => {
-        const { containerClass, inputClass, placeholder } = getElementStyles(el.type, activeElementId === el.id);
-        
-        return (
-          <div key={el.id} id={`script-element-${el.id}`} className={containerClass}>
-            <div className="absolute left-[-40px] top-1 text-xs text-gray-400 font-sans opacity-0 group-hover:opacity-100 uppercase w-[30px] text-right select-none">
-                {el.type === 'scene-heading' ? 'SH' : 
-                 el.type === 'character' ? 'CH' : 
-                 el.type === 'dialogue' ? 'DIA' : 
-                 el.type.substring(0,3)}
-            </div>
+    <div className="w-full flex-1 flex justify-center pb-20">
+        <div 
+            ref={containerRef}
+            className={`bg-white shadow-2xl my-2 p-16 min-h-[1050px] text-gray-900 transition-all duration-300 ${scriptFormat === 'split' ? 'w-[1100px]' : 'w-[850px]'}`}
+        >
+        {script.map((el, i) => {
+            const { containerClass, inputClass, placeholder } = getElementStyles(el.type, activeElementId === el.id);
             
-            <textarea
-              id={`input-${el.id}`}
-              value={el.content}
-              onChange={(e) => {
-                let val = e.target.value;
-                if (['scene-heading', 'character', 'transition', 'shot'].includes(el.type)) {
-                    val = val.toUpperCase();
-                }
-                if (el.type === 'parenthetical') {
-                   if(!val.startsWith('(') && val.length > 0) val = '(' + val;
-                   if(!val.endsWith(')') && val.length > 1 && !val.endsWith(')')) val = val + ')';
-                }
-                updateElement(el.id, val);
-                e.target.style.height = 'auto';
-                e.target.style.height = e.target.scrollHeight + 'px';
-              }}
-              onKeyDown={(e) => handleKeyDown(e, i, el)}
-              onFocus={() => setActiveElementId(el.id)}
-              placeholder={placeholder}
-              className={inputClass}
-              rows={1}
-              style={{ height: 'auto', minHeight: '1.5rem' }}
-            />
-          </div>
-        );
-      })}
-      
-      {script.length === 0 && (
-          <div className="text-center text-gray-400 mt-20 font-sans cursor-pointer" onClick={() => {
-              setScript([{ id: uuidv4(), type: 'scene-heading', content: 'INT. ' }]);
-          }}>
-              Click to start writing your masterpiece...
-          </div>
-      )}
+            return (
+            <div key={el.id} id={`script-element-${el.id}`} className={containerClass}>
+                <div className="absolute left-[-50px] top-1 text-[10px] text-gray-300 font-sans opacity-0 group-hover:opacity-100 uppercase w-[40px] text-right select-none">
+                    {el.type === 'scene-heading' ? 'Scene' : 
+                    el.type === 'character' ? 'Char' : 
+                    el.type === 'dialogue' ? 'Dial' : 
+                    el.type}
+                </div>
+                
+                <textarea
+                id={`input-${el.id}`}
+                value={el.content}
+                onChange={(e) => {
+                    let val = e.target.value;
+                    if (['scene-heading', 'character', 'transition', 'shot'].includes(el.type)) {
+                        val = val.toUpperCase();
+                    }
+                    if (el.type === 'parenthetical') {
+                    if(!val.startsWith('(') && val.length > 0) val = '(' + val;
+                    if(!val.endsWith(')') && val.length > 1 && !val.endsWith(')')) val = val + ')';
+                    }
+                    updateElement(el.id, val);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                }}
+                onKeyDown={(e) => handleKeyDown(e, i, el)}
+                onFocus={() => setActiveElementId(el.id)}
+                placeholder={placeholder}
+                className={inputClass}
+                rows={1}
+                style={{ height: 'auto', minHeight: '1.5rem' }}
+                />
+            </div>
+            );
+        })}
+        
+        {script.length === 0 && (
+            <div className="text-center text-gray-300 mt-20 font-sans cursor-pointer" onClick={() => {
+                setScript([{ id: uuidv4(), type: 'scene-heading', content: 'INT. ' }]);
+            }}>
+                Start Writing...
+            </div>
+        )}
+        </div>
     </div>
   );
 };
