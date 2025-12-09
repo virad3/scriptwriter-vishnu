@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import ScriptEditor from './components/ScriptEditor';
 import BeatBoard from './components/BeatBoard';
@@ -378,10 +377,6 @@ const MainApp = () => {
                         </button>
                    </div>
                )}
-
-               <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded text-sm font-semibold transition-colors shadow-lg shadow-blue-900/20">
-                   Upgrade to Pro
-               </button>
                
                <button 
                   onClick={() => setAiPanelOpen(!aiPanelOpen)}
@@ -405,7 +400,7 @@ const MainApp = () => {
                            // Welcome Screen
                            <div className="mt-20 text-center w-full max-w-2xl mx-auto mb-4">
                                <Logo className="w-16 h-16 mx-auto mb-6" />
-                               <h1 className="text-3xl font-bold text-white mb-2">Welcome to WriteRoom</h1>
+                               <h1 className="text-3xl font-bold text-white mb-2">Welcome to Writer Room</h1>
                                <p className="text-slate-400 mb-8">Start your next masterpiece.</p>
                                <div className="flex justify-center gap-4 mb-8">
                                    <button 
@@ -591,7 +586,7 @@ const AuthWrapper = () => {
         return (
             <div className="h-screen w-screen bg-[#0f172a] flex items-center justify-center text-white flex-col gap-4">
                 <Loader2 className="animate-spin text-purple-500" size={40} />
-                <span className="text-slate-400 text-sm">Loading WriteRoom...</span>
+                <span className="text-slate-400 text-sm">Loading Writer Room...</span>
             </div>
         );
     }

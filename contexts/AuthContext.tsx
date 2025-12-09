@@ -3,14 +3,19 @@ import {
   User, 
   onAuthStateChanged, 
   signInWithPopup, 
-  signOut as firebaseSignOut 
+  signOut as firebaseSignOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile
 } from 'firebase/auth';
-import { auth, googleProvider } from '../services/firebase';
+import { auth, googleProvider, isFirebaseReady } from '../services/firebase';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, pass: string) => Promise<void>;
+  signUpWithEmail: (email: string, pass: string, name: string) => Promise<void>;
   signInAsGuest: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -19,6 +24,8 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signInWithGoogle: async () => {},
+  signInWithEmail: async () => {},
+  signUpWithEmail: async () => {},
   signInAsGuest: async () => {},
   signOut: async () => {},
 });
@@ -52,29 +59,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
-    // Listen to Firebase Auth state
+    // If Firebase isn't configured, skip initialization to avoid errors
+    if (!isFirebaseReady) {
+        setLoading(false);
+        return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (!isDemoMode) {
         setUser(currentUser);
       }
       setLoading(false);
     }, (error) => {
-      // If Firebase fails to init (e.g. invalid config), just stop loading
-      console.warn("Auth state change error (expected in demo):", error);
+      console.warn("Auth state error:", error);
       setLoading(false);
     });
     return () => unsubscribe();
   }, [isDemoMode]);
 
   const signInWithGoogle = async () => {
+    if (!isFirebaseReady) {
+        console.log("Firebase not configured. Using Guest Mode.");
+        await signInAsGuest();
+        return;
+    }
     try {
       await signInWithPopup(auth, googleProvider);
       setIsDemoMode(false);
     } catch (error: any) {
-      console.error("Firebase login failed (likely missing config). Falling back to demo mode.", error);
-      // Fallback: If actual auth fails (e.g. invalid API key), log in as mock user
-      signInAsGuest();
+      console.error("Firebase login failed. Falling back to demo mode.", error);
+      await signInAsGuest();
     }
+  };
+
+  const signInWithEmail = async (email: string, pass: string) => {
+      if (!isFirebaseReady) {
+          await signInAsGuest();
+          return;
+      }
+      try {
+          await signInWithEmailAndPassword(auth, email, pass);
+          setIsDemoMode(false);
+      } catch (error: any) {
+          throw error;
+      }
+  };
+
+  const signUpWithEmail = async (email: string, pass: string, name: string) => {
+      if (!isFirebaseReady) {
+          await signInAsGuest();
+          // Mock display name update
+          setUser(prev => prev ? ({...prev, displayName: name} as User) : MOCK_USER);
+          return;
+      }
+      try {
+          const result = await createUserWithEmailAndPassword(auth, email, pass);
+          await updateProfile(result.user, { displayName: name });
+          setIsDemoMode(false);
+          setUser({ ...result.user, displayName: name });
+      } catch (error: any) {
+          throw error;
+      }
   };
 
   const signInAsGuest = async () => {
@@ -85,11 +130,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      if (isDemoMode) {
-          setUser(null);
-          setIsDemoMode(false);
-      } else {
-          await firebaseSignOut(auth);
+      setUser(null);
+      setIsDemoMode(false);
+      if (isFirebaseReady) {
+        await firebaseSignOut(auth).catch(() => {}); 
       }
     } catch (error) {
       console.error("Error signing out", error);
@@ -97,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInAsGuest, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signInAsGuest, signOut }}>
       {children}
     </AuthContext.Provider>
   );
