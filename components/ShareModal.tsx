@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Project } from '../types';
 import { X, Copy, UserPlus, Globe, Lock, Check } from 'lucide-react';
