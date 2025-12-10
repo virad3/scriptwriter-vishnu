@@ -1,8 +1,17 @@
 import React from 'react';
 
-// --- CONFIGURATION ---
-// To use a custom logo image for the entire app, paste your URL between the quotes below.
-// Example: "https://mysite.com/logo.png"
+// ==============================================================================
+// HOW TO USE A LOCAL LOGO FILE FROM THIS FOLDER:
+// 1. Place your image file (e.g., 'logo.png', 'logo.svg') inside this 'components' folder.
+// 2. Uncomment the import line below (remove the //):
+ import localLogo from './logo.png'; 
+// 3. Remove or comment out the 'const localLogo = null;' line below.
+// ==============================================================================
+
+// Placeholder: Delete this line when you uncomment the import above!
+const localLogo = null; 
+
+// Alternatively, you can still use a URL here:
 const CUSTOM_LOGO_URL = ""; 
 
 interface LogoProps {
@@ -11,8 +20,8 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({ className = "w-10 h-10", imageUrl }) => {
-  // Priority: 1. Prop passed directly, 2. Global constant, 3. Default SVG
-  const activeImage = imageUrl || CUSTOM_LOGO_URL;
+  // Priority: 1. Prop passed directly, 2. Local File Import, 3. Global URL Constant, 4. Default SVG
+  const activeImage = imageUrl || localLogo || CUSTOM_LOGO_URL;
 
   if (activeImage) {
     return (
