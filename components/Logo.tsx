@@ -1,17 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // ==============================================================================
 // HOW TO USE A LOCAL LOGO FILE FROM THIS FOLDER:
-// 1. Place your image file (e.g., 'logo.png', 'logo.svg') inside this 'components' folder.
-// 2. Uncomment the import line below (remove the //):
- import localLogo from './logo.png'; 
-// 3. Remove or comment out the 'const localLogo = null;' line below.
+// 1. Place your image file (e.g., 'logo.png') inside this 'components' folder.
+// 2. The app uses the path "components/logo.png" relative to index.html.
 // ==============================================================================
 
-// Placeholder: Delete this line when you uncomment the import above!
-const localLogo = null; 
+// NOTE: In browser-native ESM (no bundler), we cannot 'import' image files directly.
+// We must refer to them by their URL path.
+const LOCAL_LOGO_PATH = "components/logo.png"; 
 
-// Alternatively, you can still use a URL here:
+// Alternatively, you can use a URL here:
 const CUSTOM_LOGO_URL = ""; 
 
 interface LogoProps {
@@ -20,20 +19,24 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({ className = "w-10 h-10", imageUrl }) => {
-  // Priority: 1. Prop passed directly, 2. Local File Import, 3. Global URL Constant, 4. Default SVG
-  const activeImage = imageUrl || localLogo || CUSTOM_LOGO_URL;
+  const [imageError, setImageError] = useState(false);
 
-  if (activeImage) {
+  // Priority: 1. Prop passed directly, 2. Local File Path, 3. Global URL Constant
+  const activeImage = imageUrl || LOCAL_LOGO_PATH || CUSTOM_LOGO_URL;
+
+  // If we have an image candidate and it hasn't failed to load yet, try rendering it.
+  if (activeImage && !imageError) {
     return (
       <img 
         src={activeImage} 
         alt="App Logo" 
         className={`${className} object-contain`} 
+        onError={() => setImageError(true)}
       />
     );
   }
 
-  // Default Golden Nib SVG Logo
+  // Default Golden Nib SVG Logo (Fallback)
   return (
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <defs>
