@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 // 2. The app loads it with the path below.
 // ==============================================================================
 
-const LOCAL_LOGO_PATH = "components/logo.png";
+const LOCAL_LOGO_PATH = "./logo.png";
 
 interface LogoProps {
   className?: string;
