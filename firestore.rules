@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper: Check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Helper: Check if user is the owner of the resource
+    // Assumes documents have an 'ownerId' field matching the User UID
+    function isOwner(resourceData) {
+      return isSignedIn() && resourceData.ownerId == request.auth.uid;
+    }
+    
+    // Helper: Check if user is a collaborator
+    // Assumes documents have a 'collaborators' array field containing emails
+    // This works well with Google Auth (Gmail)
+    function isCollaborator(resourceData) {
+      return isSignedIn() 
+             && "collaborators" in resourceData 
+             && resourceData.collaborators.hasAny([request.auth.token.email]);
+    }
+
+    // --- Projects Collection ---
+    // Root level collection for projects to allow sharing
+    match /projects/{projectId} {
+      
+      // Create: Allow any signed-in user to create a project
+      // Client must set 'ownerId' to their own UID during creation
+      allow create: if isSignedIn() 
+                    && request.resource.data.ownerId == request.auth.uid;
+      
+      // Read/Update: Allow Owner or Collaborators
+      allow read, update: if isOwner(resource.data) || isCollaborator(resource.data);
+      
+      // Delete: Only Owner can delete
+      allow delete: if isOwner(resource.data);
+      
+      // --- Project Subcollections ---
+      // (script, beats, characters, locations, research)
+      // Access is inherited from the parent Project document permissions
+      match /{subcollection}/{docId} {
+         allow read, write: if isOwner(get(/databases/$(database)/documents/projects/$(projectId)).data) 
+                            || isCollaborator(get(/databases/$(database)/documents/projects/$(projectId)).data);
+      }
+    }
+    
+    // --- Users Collection ---
+    // Store user profiles/settings
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+  }
+}

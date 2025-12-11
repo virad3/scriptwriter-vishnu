@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { ScriptElement, ElementType, ScriptFormat } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { Keyboard } from 'lucide-react';
 
 interface ScriptEditorProps {
   script: ScriptElement[];
@@ -183,7 +184,8 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ script, setScript, activeEl
   };
 
   return (
-    <div className="w-full flex-1 flex justify-center pb-20">
+    <div className="w-full flex-1 flex justify-center pb-20 relative">
+        {/* Editor Page Container */}
         <div 
             ref={containerRef}
             className={`bg-white shadow-2xl my-2 p-16 min-h-[1050px] text-gray-900 transition-all duration-300 ${scriptFormat === 'split' ? 'w-[1100px]' : 'w-[850px]'}`}
@@ -228,12 +230,54 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ script, setScript, activeEl
         })}
         
         {script.length === 0 && (
-            <div className="text-center text-gray-300 mt-20 font-sans cursor-pointer" onClick={() => {
+            <div className="text-center text-gray-400 mt-20 font-sans cursor-pointer group" onClick={() => {
                 setScript([{ id: uuidv4(), type: 'scene-heading', content: 'INT. ' }]);
             }}>
-                Start Writing...
+                <div className="text-xl mb-2 group-hover:text-blue-500 transition-colors font-medium">Click to Start Writing...</div>
+                <div className="text-sm opacity-60 italic">Your story begins with a Scene Heading.</div>
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg inline-block border border-gray-100 text-xs text-gray-500 font-mono">
+                    INT. COFFEE SHOP - DAY
+                </div>
             </div>
         )}
+        </div>
+
+        {/* Floating Hints Panel */}
+        <div className="fixed bottom-6 right-6 z-40 hidden md:block print:hidden">
+           <div className="bg-slate-800/90 backdrop-blur border border-slate-700 p-4 rounded-xl shadow-2xl text-xs text-slate-300 w-64 transition-all duration-300 hover:bg-slate-800 hover:border-slate-500 opacity-60 hover:opacity-100">
+              <h4 className="font-bold text-white mb-3 uppercase tracking-wider flex items-center gap-2 text-[10px] border-b border-slate-700 pb-2">
+                 <span className="bg-slate-700 p-1 rounded"><Keyboard size={12}/></span> 
+                 Writing Shortcuts
+              </h4>
+              
+              <div className="space-y-3">
+                 <div>
+                    <div className="flex justify-between mb-1 items-center">
+                        <span className="font-bold text-slate-100 bg-slate-700/50 px-1.5 py-0.5 rounded font-mono text-[10px]">TAB</span>
+                        <span className="text-slate-400">Change Element</span>
+                    </div>
+                    <div className="flex justify-between mb-1 items-center">
+                        <span className="font-bold text-slate-100 bg-slate-700/50 px-1.5 py-0.5 rounded font-mono text-[10px]">ENTER</span>
+                        <span className="text-slate-400">Next Line</span>
+                    </div>
+                 </div>
+
+                 <div className="border-t border-slate-700 pt-2 space-y-2">
+                    <div className="flex items-start gap-2">
+                        <span className="text-blue-400 font-bold shrink-0 w-8 text-right">SCENE</span>
+                        <span>Start with <span className="font-mono text-slate-200">INT.</span> or <span className="font-mono text-slate-200">EXT.</span> followed by location.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                        <span className="text-blue-400 font-bold shrink-0 w-8 text-right">CHAR</span>
+                        <span>Names must be in <span className="font-bold text-slate-200">ALL CAPS</span>.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                        <span className="text-blue-400 font-bold shrink-0 w-8 text-right">PAREN</span>
+                        <span>Use <span className="font-mono text-slate-200">(wryly)</span> for tone.</span>
+                    </div>
+                 </div>
+              </div>
+           </div>
         </div>
     </div>
   );

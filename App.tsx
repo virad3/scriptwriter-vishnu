@@ -15,7 +15,7 @@ import { AppState, ScriptElement, BeatCard, ScriptFormat, Project, CharacterProf
 import { v4 as uuidv4 } from 'uuid';
 import { 
   FileText, Layout, Users, Settings, Bot,
-  PanelRightClose, Share2, Download, Cloud,
+  PanelRightClose, Share2, Download,
   Columns, LogOut, Loader2, Menu, FolderOpen,
   PlusCircle, FileUp, FileDown, MessageSquare,
   BarChart2, Wrench, CreditCard, ChevronLeft,
@@ -337,8 +337,6 @@ const MainApp = () => {
                  <div onClick={() => setShowProjectListModal(true)}>
                     <SidebarActionButton icon={<FolderOpen size={16} />} label="Open Project" />
                  </div>
-                 <div className="h-px bg-slate-700 my-2"></div>
-                 <SidebarActionButton icon={<Cloud size={16} />} label="Set External Backups" />
              </div>
           </div>
       )}
@@ -352,7 +350,7 @@ const MainApp = () => {
                <button onClick={() => setProjectPanelOpen(!projectPanelOpen)} className="md:hidden text-slate-400 mr-2">
                    <Menu size={20} />
                </button>
-               {['File', 'Edit', 'Format', 'Share', 'View', 'Tools', 'Reports', 'Revisions', 'Production', 'Customize', 'Help'].map(item => (
+               {['File', 'Edit', 'Format', 'Share', 'View', 'Tools', 'Reports', 'Revisions'].map(item => (
                    <span key={item} className="cursor-pointer hover:text-white transition-colors hidden xl:inline-block">{item}</span>
                ))}
                <span className="xl:hidden cursor-pointer hover:text-white">Menu</span>
