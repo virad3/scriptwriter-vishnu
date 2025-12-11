@@ -1,22 +1,14 @@
 import React from "react";
+import logo from "../assets/logo.png";
 
-// Update the path below to match where your PNG image is stored
-import logo from "./logo.png"; // example path
-
-interface LogoProps {
-  width?: number | string;
-  height?: number | string;
-  className?: string;
-}
-
-const Logo: React.FC<LogoProps> = ({ width = 120, height = "auto", className }) => {
+const Logo: React.FC = () => {
   return (
     <img
       src={logo}
-      alt="Application Logo"
-      width={width}
-      height={height}
-      className={className}
+      alt="App Logo"
+      width={80}
+      height={80}
+      style={{ objectFit: "contain" }}
     />
   );
 };
