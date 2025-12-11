@@ -1,13 +1,22 @@
-import React from 'react';
+import React from "react";
 
-export const Logo: React.FC<{ className?: string }> = ({ className = "w-10 h-10" }) => {
-  // Using a direct relative path from index.html to the image
+// Update the path below to match where your PNG image is stored
+import logo from "./logo.png"; // example path
+
+interface LogoProps {
+  width?: number | string;
+  height?: number | string;
+  className?: string;
+}
+
+const Logo: React.FC<LogoProps> = ({ width = 120, height = "auto", className }) => {
   return (
-    <img 
-      src="components/logo.png" 
-      alt="Writer Room Logo" 
-      className={`${className} object-contain`}
-      onError={(e) => console.warn("Logo failed to load from components/logo.png")}
+    <img
+      src={logo}
+      alt="Application Logo"
+      width={width}
+      height={height}
+      className={className}
     />
   );
 };
