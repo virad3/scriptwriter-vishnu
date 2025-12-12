@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Chrome, Mail, Loader2, User as UserIcon, AlertTriangle, ArrowRight, UserPlus, LogIn, Info, Settings } from 'lucide-react';
+import { Chrome, Mail, Loader2, User as UserIcon, AlertTriangle, ArrowRight, UserPlus, LogIn, Info, Settings, XCircle } from 'lucide-react';
 import { Logo } from './Logo';
 import { isFirebaseReady } from '../services/firebase';
 
@@ -22,15 +22,30 @@ const LoginScreen: React.FC = () => {
     setError('');
     
     if (!isFirebaseReady) {
-        // Just a log, the AuthContext handles the simulation
         console.log("Demo Mode: Simulating Google Login");
     }
 
     try {
       await signInWithGoogle();
     } catch (err: any) {
-      console.error(err);
-      setError("Google Login failed. Please check your Firebase configuration.");
+      console.error("Google Login Error:", err);
+      
+      let errorMessage = "Google Login failed.";
+
+      // Handle specific Firebase errors
+      if (err.code === 'auth/unauthorized-domain') {
+          errorMessage = `Domain Unauthorized: You must add "${window.location.hostname}" to: Firebase Console > Authentication > Settings > Authorized Domains.`;
+      } else if (err.code === 'auth/popup-closed-by-user') {
+          errorMessage = "Sign-in popup was closed before completing.";
+      } else if (err.code === 'auth/cancelled-popup-request') {
+          errorMessage = "Only one popup can be open at a time.";
+      } else if (err.code === 'auth/api-key-not-valid') {
+          errorMessage = "Invalid API Key. Please check your services/firebase.ts config.";
+      } else if (err.message) {
+          errorMessage = err.message;
+      }
+
+      setError(errorMessage);
       setIsLoading(false);
     }
   };
@@ -90,9 +105,9 @@ const LoginScreen: React.FC = () => {
             </h2>
             
             {error && (
-                <div className="mb-4 p-3 bg-red-900/30 border border-red-800 text-red-200 text-xs rounded-lg flex items-start gap-2">
-                    <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                    <span>{error}</span>
+                <div className="mb-4 p-3 bg-red-900/30 border border-red-800 text-red-200 text-xs rounded-lg flex items-start gap-2 animate-pulse">
+                    <XCircle size={14} className="shrink-0 mt-0.5" />
+                    <span className="font-medium break-words">{error}</span>
                 </div>
             )}
             
@@ -114,6 +129,7 @@ const LoginScreen: React.FC = () => {
                             <ol className="list-decimal ml-4 mt-1 space-y-1">
                                 <li>Create a project at <strong>firebase.google.com</strong></li>
                                 <li>Enable <strong>Authentication (Google Provider)</strong></li>
+                                <li>Add <strong>{window.location.hostname}</strong> to Authorized Domains in Auth Settings.</li>
                                 <li>Copy config to <strong>services/firebase.ts</strong></li>
                             </ol>
                         </div>

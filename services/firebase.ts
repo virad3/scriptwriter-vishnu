@@ -8,8 +8,10 @@ import { getFirestore, Firestore } from 'firebase/firestore';
 // To enable real Google Sign-In and database storage:
 // 1. Create a project at https://console.firebase.google.com/
 // 2. Add a "Web App" to your project.
-// 3. Copy the 'firebaseConfig' object.
-// 4. Replace the values below with your actual credentials.
+// 3. Copy the 'firebaseConfig' object below.
+// 4. IMPORTANT: Add your current domain to Firebase Console -> Authentication -> Settings -> Authorized Domains.
+//    (If you are seeing "auth/unauthorized-domain" error, this is the missing step)
+// 5. Replace the values below with your actual credentials.
 // ------------------------------------------------------------------
 
 const getEnvVar = (key: string) => {
