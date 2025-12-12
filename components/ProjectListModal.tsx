@@ -1,6 +1,6 @@
 import React from 'react';
 import { Project } from '../types';
-import { X, FileText, Calendar, Trash2 } from 'lucide-react';
+import { X, FileText, Calendar, Trash2, Plus } from 'lucide-react';
 
 interface ProjectListModalProps {
   isOpen: boolean;
@@ -8,6 +8,7 @@ interface ProjectListModalProps {
   projects: Project[];
   onOpenProject: (project: Project) => void;
   onDeleteProject: (projectId: string) => void;
+  onCreateProject: () => void;
 }
 
 const ProjectListModal: React.FC<ProjectListModalProps> = ({ 
@@ -15,7 +16,8 @@ const ProjectListModal: React.FC<ProjectListModalProps> = ({
   onClose, 
   projects, 
   onOpenProject, 
-  onDeleteProject 
+  onDeleteProject,
+  onCreateProject
 }) => {
   if (!isOpen) return null;
 
@@ -23,17 +25,31 @@ const ProjectListModal: React.FC<ProjectListModalProps> = ({
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
       <div className="bg-[#1e293b] p-6 rounded-xl border border-slate-600 w-[600px] max-h-[80vh] flex flex-col shadow-2xl">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-white">Open Project</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-            <X size={20} />
-          </button>
+          <h3 className="text-xl font-bold text-white">Projects</h3>
+          <div className="flex items-center gap-3">
+             <button 
+                onClick={onCreateProject}
+                className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+             >
+                <Plus size={16} /> New Project
+             </button>
+             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors p-1 rounded hover:bg-slate-700">
+                <X size={20} />
+             </button>
+          </div>
         </div>
         
         <div className="flex-1 overflow-y-auto min-h-[300px] pr-2">
           {projects.length === 0 ? (
             <div className="text-center text-slate-500 py-10 flex flex-col items-center">
                 <FileText size={48} className="mb-4 opacity-20" />
-                <p>No projects found. Create one to get started!</p>
+                <p className="mb-4">No projects found.</p>
+                <button 
+                  onClick={onCreateProject}
+                  className="text-blue-400 hover:text-blue-300 text-sm hover:underline"
+                >
+                  Create your first project
+                </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-2">

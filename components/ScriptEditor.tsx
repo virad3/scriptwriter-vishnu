@@ -9,9 +9,17 @@ interface ScriptEditorProps {
   activeElementId: string | null;
   setActiveElementId: (id: string) => void;
   scriptFormat: ScriptFormat;
+  zoomLevel?: number;
 }
 
-const ScriptEditor: React.FC<ScriptEditorProps> = ({ script, setScript, activeElementId, setActiveElementId, scriptFormat }) => {
+const ScriptEditor: React.FC<ScriptEditorProps> = ({ 
+    script, 
+    setScript, 
+    activeElementId, 
+    setActiveElementId, 
+    scriptFormat,
+    zoomLevel = 1
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -95,7 +103,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ script, setScript, activeEl
 
     // Highlight active line
     const activeClass = isActive 
-        ? " bg-blue-50/50 rounded -mx-2 px-2 py-0.5" 
+        ? " bg-blue-50/50 rounded -mx-2 px-2 py-0.5 print:bg-transparent print:px-0" 
         : " px-2 py-0.5 border-l-2 border-transparent";
 
     containerClass += activeClass;
@@ -188,14 +196,18 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ script, setScript, activeEl
         {/* Editor Page Container */}
         <div 
             ref={containerRef}
-            className={`bg-white shadow-2xl my-2 p-16 min-h-[1050px] text-gray-900 transition-all duration-300 ${scriptFormat === 'split' ? 'w-[1100px]' : 'w-[850px]'}`}
+            style={{ 
+                transform: `scale(${zoomLevel})`, 
+                transformOrigin: 'top center' 
+            }}
+            className={`bg-white shadow-2xl my-2 p-16 min-h-[1050px] text-gray-900 transition-all duration-300 print:shadow-none print:w-full print:my-0 print:p-8 ${scriptFormat === 'split' ? 'w-[1100px]' : 'w-[850px]'}`}
         >
         {script.map((el, i) => {
             const { containerClass, inputClass, placeholder } = getElementStyles(el.type, activeElementId === el.id);
             
             return (
             <div key={el.id} id={`script-element-${el.id}`} className={containerClass}>
-                <div className="absolute left-[-50px] top-1 text-[10px] text-gray-300 font-sans opacity-0 group-hover:opacity-100 uppercase w-[40px] text-right select-none">
+                <div className="absolute left-[-50px] top-1 text-[10px] text-gray-300 font-sans opacity-0 group-hover:opacity-100 uppercase w-[40px] text-right select-none print:hidden">
                     {el.type === 'scene-heading' ? 'Scene' : 
                     el.type === 'character' ? 'Char' : 
                     el.type === 'dialogue' ? 'Dial' : 
@@ -230,7 +242,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ script, setScript, activeEl
         })}
         
         {script.length === 0 && (
-            <div className="text-center text-gray-400 mt-20 font-sans cursor-pointer group" onClick={() => {
+            <div className="text-center text-gray-400 mt-20 font-sans cursor-pointer group print:hidden" onClick={() => {
                 setScript([{ id: uuidv4(), type: 'scene-heading', content: 'INT. ' }]);
             }}>
                 <div className="text-xl mb-2 group-hover:text-blue-500 transition-colors font-medium">Click to Start Writing...</div>

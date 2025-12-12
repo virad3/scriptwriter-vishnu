@@ -9,9 +9,10 @@ import LoginScreen from './components/LoginScreen';
 import ProjectSettingsModal from './components/ProjectSettingsModal';
 import ProjectListModal from './components/ProjectListModal';
 import ShareModal from './components/ShareModal';
+import MenuBar from './components/MenuBar';
 import { Logo } from './components/Logo';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { AppState, ScriptElement, BeatCard, ScriptFormat, Project, CharacterProfile, LocationItem, ResearchItem } from './types';
+import { AppState, ScriptElement, BeatCard, ScriptFormat, Project, CharacterProfile, LocationItem, ResearchItem, ElementType } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { 
   FileText, Layout, Users, Settings, Bot,
@@ -47,6 +48,9 @@ const MainApp = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [projectPanelOpen, setProjectPanelOpen] = useState(true);
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
+  
+  // View State
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   // Modals
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
@@ -144,29 +148,21 @@ const MainApp = () => {
   };
 
   const handleDeleteProject = (projectId: string) => {
-    // 1. Identify the project to delete (for the confirmation message)
-    // We try to find it, but if not found in current scope, we default title.
     const projectToDelete = projects.find(p => p.id === projectId);
     const title = projectToDelete ? projectToDelete.title : 'this project';
 
-    // 2. Confirm with user
     if (window.confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) {
-      
-      // 3. Update State & Local Storage
-      // Use functional update to avoid stale closure issues
       setProjects(prevProjects => {
           const updatedProjects = prevProjects.filter(p => p.id !== projectId);
           localStorage.setItem('writeroom-projects', JSON.stringify(updatedProjects));
           return updatedProjects;
       });
       
-      // 4. Clean up Project Data
       const dataTypes = ['script', 'beats', 'characters', 'locations', 'research'];
       dataTypes.forEach(type => {
           localStorage.removeItem(`writeroom-${type}-${projectId}`);
       });
 
-      // 5. Handle Active Project Deletion
       if (currentProject?.id === projectId) {
         setCurrentProject(null);
         setScript([]);
@@ -176,7 +172,6 @@ const MainApp = () => {
         setResearch([]);
         setView('write'); 
       }
-      
       setProjectMenuOpen(false);
     }
   };
@@ -199,7 +194,6 @@ const MainApp = () => {
           lastModified: Date.now()
       };
 
-      // Copy local storage data deeply
       const dataKeys = ['script', 'beats', 'characters', 'locations', 'research'];
       dataKeys.forEach(key => {
           const data = localStorage.getItem(`writeroom-${key}-${project.id}`);
@@ -212,8 +206,6 @@ const MainApp = () => {
       setProjects(updatedProjects);
       localStorage.setItem('writeroom-projects', JSON.stringify(updatedProjects));
       setProjectMenuOpen(false);
-      
-      // Open the duplicated project immediately for better UX
       handleOpenProject(newProject);
   };
 
@@ -229,6 +221,60 @@ const MainApp = () => {
     }
   };
 
+  // --- Menu Bar Action Handler ---
+  const handleMenuAction = (action: string, payload?: any) => {
+      switch(action) {
+          case 'NEW_PROJECT': setShowNewProjectModal(true); break;
+          case 'OPEN_PROJECT': setShowProjectListModal(true); break;
+          case 'SAVE': 
+             // Auto-save handles this, but visual feedback is nice
+             setSyncStatus('Saved!');
+             setTimeout(() => setSyncStatus(''), 1000);
+             break;
+          case 'CLOSE_PROJECT': setCurrentProject(null); break;
+          case 'PRINT':
+              window.print();
+              break;
+          case 'EXPORT_JSON':
+              if (!currentProject) return;
+              const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(script));
+              const downloadAnchorNode = document.createElement('a');
+              downloadAnchorNode.setAttribute("href", dataStr);
+              downloadAnchorNode.setAttribute("download", `${currentProject.title.replace(/\s+/g, '_')}.json`);
+              document.body.appendChild(downloadAnchorNode);
+              downloadAnchorNode.click();
+              downloadAnchorNode.remove();
+              break;
+          case 'UNDO': 
+             // Simple alert for now as history stack is complex
+             alert("Undo not yet implemented"); 
+             break;
+          case 'FIND':
+             // Basic browser find
+             // We can't trigger Ctrl+F programmatically securely, so we prompt user
+             alert("Use Ctrl+F / Cmd+F to find text.");
+             break;
+          case 'FORMAT':
+             if (activeElementId && payload) {
+                 setScript(script.map(el => el.id === activeElementId ? { ...el, type: payload as ElementType } : el));
+             }
+             break;
+          case 'SHARE': setShowShareModal(true); break;
+          case 'ZOOM_IN': setZoomLevel(prev => Math.min(prev + 0.1, 2.0)); break;
+          case 'ZOOM_OUT': setZoomLevel(prev => Math.max(prev - 0.1, 0.5)); break;
+          case 'ZOOM_RESET': setZoomLevel(1); break;
+          case 'TOGGLE_SIDEBAR': setProjectPanelOpen(!projectPanelOpen); break;
+          case 'VIEW': 
+             if(payload) setView(payload);
+             break;
+          case 'CLEAR_REVISIONS':
+             if (window.confirm("Clear all colored revision marks?")) {
+                 setScript(script.map(el => ({...el, revisionColor: undefined})));
+             }
+             break;
+      }
+  };
+
   // --- AI Handler ---
   const handleAiAssist = async () => {
     if (!aiPrompt) return;
@@ -242,17 +288,21 @@ const MainApp = () => {
     setAiLoading(false);
   };
 
+  const getActiveElementType = () => {
+      const active = script.find(el => el.id === activeElementId);
+      return active?.type;
+  };
+
   return (
     <div className="flex h-screen w-screen bg-[#0f172a] text-slate-200 font-sans overflow-hidden">
       
       {/* --- Icon Rail Sidebar (Leftmost) --- */}
-      <nav className="w-16 flex flex-col items-center py-4 bg-[#1e293b] border-r border-slate-700 z-30 shrink-0">
+      <nav className="w-16 flex flex-col items-center py-4 bg-[#1e293b] border-r border-slate-700 z-30 shrink-0 print:hidden">
         <div className="mb-6">
            <Logo className="w-8 h-8" />
         </div>
         
         <div className="flex flex-col gap-4 w-full">
-            {/* Project button now opens Project List Modal */}
             <SidebarIcon icon={<FileText size={20} />} active={view === 'write' && !showProjectListModal} onClick={() => setShowProjectListModal(true)} label="Project" />
             <SidebarIcon icon={<Layout size={20} />} active={view === 'outline'} onClick={() => setView('outline')} label="Cards" />
             <SidebarIcon icon={<Users size={20} />} active={view === 'characters'} onClick={() => setView('characters')} label="Chars" />
@@ -274,7 +324,7 @@ const MainApp = () => {
 
       {/* --- Project Panel (Secondary Sidebar) --- */}
       {projectPanelOpen && (
-          <div className="w-64 bg-[#1e293b] border-r border-slate-700 flex flex-col hidden md:flex shrink-0 relative">
+          <div className="w-64 bg-[#1e293b] border-r border-slate-700 flex flex-col hidden md:flex shrink-0 relative print:hidden">
              <div className="h-12 flex items-center px-4 border-b border-slate-700 bg-[#1e293b] justify-between">
                  <span className="font-semibold text-sm text-slate-300 truncate flex-1 mr-2">{currentProject?.title || 'No Project Open'}</span>
                  
@@ -345,18 +395,23 @@ const MainApp = () => {
       <main className="flex-1 flex flex-col relative h-full bg-[#0f172a] overflow-hidden">
         
         {/* Top Header / Menu Bar */}
-        <header className="h-14 border-b border-slate-700 flex items-center justify-between px-6 bg-[#0f172a] shadow-sm shrink-0">
-           <div className="flex items-center gap-6 text-sm text-slate-300 font-medium">
-               <button onClick={() => setProjectPanelOpen(!projectPanelOpen)} className="md:hidden text-slate-400 mr-2">
+        <header className="h-14 border-b border-slate-700 flex items-center justify-between px-2 bg-[#0f172a] shadow-sm shrink-0 print:hidden z-40">
+           <div className="flex items-center h-full">
+               <button onClick={() => setProjectPanelOpen(!projectPanelOpen)} className="md:hidden text-slate-400 mr-2 p-2">
                    <Menu size={20} />
                </button>
-               {['File', 'Edit', 'Format', 'Share', 'View', 'Tools', 'Reports', 'Revisions'].map(item => (
-                   <span key={item} className="cursor-pointer hover:text-white transition-colors hidden xl:inline-block">{item}</span>
-               ))}
-               <span className="xl:hidden cursor-pointer hover:text-white">Menu</span>
+               
+               {/* New Menu Bar Component - Only Visible When Project is Active */}
+               {currentProject && (
+                 <MenuBar 
+                   onAction={handleMenuAction} 
+                   isProjectOpen={!!currentProject}
+                   activeElementType={getActiveElementType()}
+                 />
+               )}
            </div>
 
-           <div className="flex items-center gap-4">
+           <div className="flex items-center gap-4 pr-4">
                {syncStatus && <span className="text-xs text-slate-500 italic">{syncStatus}</span>}
                
                {view === 'write' && currentProject && (
@@ -390,9 +445,9 @@ const MainApp = () => {
         <div className="flex-1 overflow-hidden relative flex">
             
             {/* Center Panel */}
-            <div className="flex-1 h-full overflow-y-auto scroll-smooth">
+            <div className="flex-1 h-full overflow-y-auto scroll-smooth print:overflow-visible">
                 {view === 'write' && (
-                    <div className="min-h-full flex flex-col items-center bg-[#0f172a]"> 
+                    <div className="min-h-full flex flex-col items-center bg-[#0f172a] print:bg-white print:block"> 
                        
                        {!currentProject ? (
                            // Welcome Screen
@@ -441,6 +496,7 @@ const MainApp = () => {
                                 activeElementId={activeElementId}
                                 setActiveElementId={setActiveElementId}
                                 scriptFormat={scriptFormat}
+                                zoomLevel={zoomLevel}
                             />
                        )}
                     </div>
@@ -454,7 +510,7 @@ const MainApp = () => {
 
             {/* AI Side Panel (Right) */}
             {aiPanelOpen && (
-                <div className="w-80 bg-[#1e293b] border-l border-slate-700 flex flex-col shadow-2xl z-30 absolute right-0 h-full md:relative shrink-0">
+                <div className="w-80 bg-[#1e293b] border-l border-slate-700 flex flex-col shadow-2xl z-30 absolute right-0 h-full md:relative shrink-0 print:hidden">
                     <div className="p-4 border-b border-slate-700 font-bold flex justify-between items-center text-purple-400 bg-[#1e293b]">
                         <span>AI Assistant</span>
                         <button onClick={() => setAiPanelOpen(false)}><PanelRightClose size={16} /></button>
@@ -521,6 +577,10 @@ const MainApp = () => {
         projects={projects}
         onOpenProject={handleOpenProject}
         onDeleteProject={handleDeleteProject}
+        onCreateProject={() => {
+            setShowProjectListModal(false);
+            setShowNewProjectModal(true);
+        }}
       />
       
       {/* Project Settings Modal */}
