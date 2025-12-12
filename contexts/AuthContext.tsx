@@ -37,7 +37,7 @@ const MOCK_USER = {
   uid: 'demo-user-123',
   displayName: 'Screenwriter One',
   email: 'writer@writeroom.ai',
-  photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+  photoURL: null, 
   emailVerified: true,
   isAnonymous: false,
   metadata: {},
@@ -79,16 +79,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     if (!isFirebaseReady) {
-        console.log("Firebase not configured. Using Guest Mode.");
-        await signInAsGuest();
+        console.log("Firebase not configured. Simulating Google Login.");
+        // Simulate a Google User Login for preview purposes
+        await new Promise(resolve => setTimeout(resolve, 600));
+        
+        // Create a distinct user identity for "Google Login" simulation
+        const mockGoogleUser = {
+            ...MOCK_USER,
+            uid: 'google-sim-user-' + Math.random().toString(36).substr(2, 5),
+            displayName: 'Google User',
+            email: 'user@gmail.com',
+            photoURL: 'https://lh3.googleusercontent.com/a/ACg8ocL-3Y8JzC_8tQ6z8c5c5c5c5c5c5c5c=s96-c', // Generic or real-ish URL
+            providerData: [{ providerId: 'google.com' }]
+        } as unknown as User;
+
+        setUser(mockGoogleUser);
+        setIsDemoMode(false);
         return;
     }
+    
     try {
       await signInWithPopup(auth, googleProvider);
       setIsDemoMode(false);
     } catch (error: any) {
-      console.error("Firebase login failed. Falling back to demo mode.", error);
-      await signInAsGuest();
+      console.error("Firebase login failed", error);
+      throw error;
     }
   };
 

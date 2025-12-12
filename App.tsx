@@ -59,17 +59,26 @@ const MainApp = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [newProjectTitle, setNewProjectTitle] = useState('');
 
-  // --- Load Projects on Mount ---
+  // --- Load Projects on Mount (User Specific) ---
   useEffect(() => {
-    const savedProjects = localStorage.getItem('writeroom-projects');
-    if (savedProjects) {
-      setProjects(JSON.parse(savedProjects));
+    if (user?.uid) {
+        // Namespace storage by user ID so Guest and Google User don't share data
+        const storageKey = `writeroom-projects-${user.uid}`;
+        const savedProjects = localStorage.getItem(storageKey);
+        if (savedProjects) {
+            setProjects(JSON.parse(savedProjects));
+        } else {
+            setProjects([]);
+        }
+        // Reset current project when switching users
+        setCurrentProject(null);
+        setScript([]);
     }
-  }, []);
+  }, [user?.uid]);
 
   // --- Auto-Save ---
   useEffect(() => {
-    if (!currentProject) return;
+    if (!currentProject || !user?.uid) return;
 
     const timer = setTimeout(() => {
       setSyncStatus('Saving...');
@@ -84,7 +93,7 @@ const MainApp = () => {
           const updated = prevProjects.map(p => 
             p.id === currentProject.id ? { ...p, lastModified: Date.now() } : p
           );
-          localStorage.setItem('writeroom-projects', JSON.stringify(updated));
+          localStorage.setItem(`writeroom-projects-${user.uid}`, JSON.stringify(updated));
           return updated;
       });
 
@@ -96,17 +105,18 @@ const MainApp = () => {
   // --- Project Actions ---
 
   const handleCreateProject = () => {
-    if (!newProjectTitle.trim()) return;
+    if (!newProjectTitle.trim() || !user?.uid) return;
 
     const newProject: Project = {
       id: uuidv4(),
       title: newProjectTitle,
-      lastModified: Date.now()
+      lastModified: Date.now(),
+      author: user.displayName || 'Unknown Author'
     };
 
     const updatedProjects = [...projects, newProject];
     setProjects(updatedProjects);
-    localStorage.setItem('writeroom-projects', JSON.stringify(updatedProjects));
+    localStorage.setItem(`writeroom-projects-${user.uid}`, JSON.stringify(updatedProjects));
 
     // Initialize fresh state
     const initialScript: ScriptElement[] = [{ id: uuidv4(), type: 'scene-heading', content: 'INT. ' }];
@@ -148,13 +158,14 @@ const MainApp = () => {
   };
 
   const handleDeleteProject = (projectId: string) => {
+    if (!user?.uid) return;
     const projectToDelete = projects.find(p => p.id === projectId);
     const title = projectToDelete ? projectToDelete.title : 'this project';
 
     if (window.confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) {
       setProjects(prevProjects => {
           const updatedProjects = prevProjects.filter(p => p.id !== projectId);
-          localStorage.setItem('writeroom-projects', JSON.stringify(updatedProjects));
+          localStorage.setItem(`writeroom-projects-${user.uid}`, JSON.stringify(updatedProjects));
           return updatedProjects;
       });
       
@@ -177,15 +188,17 @@ const MainApp = () => {
   };
 
   const handleUpdateProject = (updatedProject: Project) => {
+    if (!user?.uid) return;
     setProjects(prevProjects => {
         const updated = prevProjects.map(p => p.id === updatedProject.id ? updatedProject : p);
-        localStorage.setItem('writeroom-projects', JSON.stringify(updated));
+        localStorage.setItem(`writeroom-projects-${user.uid}`, JSON.stringify(updated));
         return updated;
     });
     setCurrentProject(updatedProject);
   };
 
   const handleDuplicateProject = (project: Project) => {
+      if (!user?.uid) return;
       const newId = uuidv4();
       const newProject: Project = {
           ...project,
@@ -204,7 +217,7 @@ const MainApp = () => {
 
       const updatedProjects = [...projects, newProject];
       setProjects(updatedProjects);
-      localStorage.setItem('writeroom-projects', JSON.stringify(updatedProjects));
+      localStorage.setItem(`writeroom-projects-${user.uid}`, JSON.stringify(updatedProjects));
       setProjectMenuOpen(false);
       handleOpenProject(newProject);
   };
@@ -315,7 +328,7 @@ const MainApp = () => {
                 {user?.photoURL ? (
                     <img src={user.photoURL} alt={user.displayName || 'User'} className="w-full h-full object-cover" />
                 ) : (
-                    <span className="text-xs font-bold">{user?.displayName?.[0] || 'VK'}</span>
+                    <span className="text-xs font-bold">{user?.displayName?.[0] || 'U'}</span>
                 )}
             </div>
             <SidebarIcon icon={<LogOut size={20} />} active={false} onClick={signOut} label="Sign Out" />
@@ -454,6 +467,9 @@ const MainApp = () => {
                            <div className="mt-20 text-center w-full max-w-2xl mx-auto mb-4">
                                <Logo className="w-16 h-16 mx-auto mb-6" />
                                <h1 className="text-3xl font-bold text-white mb-2">Welcome to Writer Room</h1>
+                               <div className="text-purple-400 text-sm font-medium mb-6 uppercase tracking-wider">
+                                   Logged in as {user?.displayName}
+                               </div>
                                <p className="text-slate-400 mb-8">Start your next masterpiece.</p>
                                <div className="flex justify-center gap-4 mb-8">
                                    <button 

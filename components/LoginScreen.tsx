@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Chrome, Mail, Loader2, User as UserIcon, AlertTriangle, ArrowRight, UserPlus, LogIn } from 'lucide-react';
+import { Chrome, Mail, Loader2, User as UserIcon, AlertTriangle, ArrowRight, UserPlus, LogIn, Info, Settings } from 'lucide-react';
 import { Logo } from './Logo';
+import { isFirebaseReady } from '../services/firebase';
 
 const LoginScreen: React.FC = () => {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail, signInAsGuest } = useAuth();
@@ -9,6 +10,7 @@ const LoginScreen: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showConfigHelp, setShowConfigHelp] = useState(false);
   
   // Form State
   const [email, setEmail] = useState('');
@@ -18,11 +20,18 @@ const LoginScreen: React.FC = () => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     setError('');
+    
+    if (!isFirebaseReady) {
+        // Just a log, the AuthContext handles the simulation
+        console.log("Demo Mode: Simulating Google Login");
+    }
+
     try {
       await signInWithGoogle();
     } catch (err: any) {
-      setError("Google Login unavailable. Switching to Guest...");
-      setTimeout(() => signInAsGuest(), 1500);
+      console.error(err);
+      setError("Google Login failed. Please check your Firebase configuration.");
+      setIsLoading(false);
     }
   };
 
@@ -40,7 +49,6 @@ const LoginScreen: React.FC = () => {
           }
       } catch (err: any) {
           console.error(err);
-          // Map firebase error codes to user friendly messages
           let msg = "Authentication failed.";
           if (err.code === 'auth/invalid-credential') msg = "Invalid email or password.";
           if (err.code === 'auth/user-not-found') msg = "No account found with this email.";
@@ -85,6 +93,31 @@ const LoginScreen: React.FC = () => {
                 <div className="mb-4 p-3 bg-red-900/30 border border-red-800 text-red-200 text-xs rounded-lg flex items-start gap-2">
                     <AlertTriangle size={14} className="shrink-0 mt-0.5" />
                     <span>{error}</span>
+                </div>
+            )}
+            
+            {!isFirebaseReady && (
+                 <div className="mb-6 bg-blue-900/20 border border-blue-800/50 rounded-lg overflow-hidden">
+                    <div className="p-3 flex items-start gap-2 cursor-pointer hover:bg-blue-900/30 transition-colors" onClick={() => setShowConfigHelp(!showConfigHelp)}>
+                        <Info size={14} className="shrink-0 mt-0.5 text-blue-200" />
+                        <div className="flex-1">
+                            <span className="text-blue-200 text-xs font-bold block mb-0.5">Demo Mode Active</span>
+                            <span className="text-blue-300 text-[11px] leading-tight block">
+                                Real Google Sign-In is disabled because Firebase keys are missing.
+                            </span>
+                        </div>
+                        <Settings size={14} className="text-blue-400 opacity-50" />
+                    </div>
+                    {showConfigHelp && (
+                        <div className="bg-[#0f172a]/50 p-3 border-t border-blue-800/50 text-[11px] text-slate-400">
+                            To enable real login:
+                            <ol className="list-decimal ml-4 mt-1 space-y-1">
+                                <li>Create a project at <strong>firebase.google.com</strong></li>
+                                <li>Enable <strong>Authentication (Google Provider)</strong></li>
+                                <li>Copy config to <strong>services/firebase.ts</strong></li>
+                            </ol>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -148,10 +181,15 @@ const LoginScreen: React.FC = () => {
                 <button 
                     onClick={handleGoogleLogin}
                     disabled={isLoading}
-                    className="w-full bg-white hover:bg-slate-100 text-slate-900 font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm"
+                    className="w-full bg-white hover:bg-slate-100 text-slate-900 font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm relative overflow-hidden group"
                 >
-                    <Chrome size={18} />
-                    Google
+                    <div className="flex items-center justify-center gap-2 relative z-10">
+                        <Chrome size={18} />
+                        Google {!isFirebaseReady && '(Simulated)'}
+                    </div>
+                    {!isFirebaseReady && (
+                        <div className="absolute inset-0 bg-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    )}
                 </button>
                 
                 <button 

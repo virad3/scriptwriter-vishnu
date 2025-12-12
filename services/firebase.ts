@@ -1,7 +1,25 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
-// NOTE: For production, you must replace these with your actual Firebase project keys.
+// ------------------------------------------------------------------
+// CONFIGURATION INSTRUCTIONS
+// ------------------------------------------------------------------
+// To enable real Google Sign-In and database storage:
+// 1. Create a project at https://console.firebase.google.com/
+// 2. Add a "Web App" to your project.
+// 3. Copy the 'firebaseConfig' object.
+// 4. Replace the values below with your actual credentials.
+// ------------------------------------------------------------------
+
+const getEnvVar = (key: string) => {
+  try {
+    return typeof process !== 'undefined' ? process.env?.[key] : undefined;
+  } catch (e) {
+    return undefined;
+  }
+};
+
 const firebaseConfig = {
   apiKey: "AIzaSyAJCXKYy18pQlNqOG-YgPjs61iODGcE48E",
   authDomain: "writeroom-d7374.firebaseapp.com",
@@ -12,25 +30,35 @@ const firebaseConfig = {
   measurementId: "G-RPP8CXZF6N"
 };
 
-// Check if the API key is still the placeholder
+// Determines if the app is configured with real credentials or running in demo mode
 export const isFirebaseReady = firebaseConfig.apiKey !== "YOUR_API_KEY_HERE";
 
 let app;
 let auth: Auth;
 let googleProvider: GoogleAuthProvider;
+let db: Firestore;
 
 if (isFirebaseReady) {
-  // Only initialize if we have a (presumably) valid key
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  googleProvider = new GoogleAuthProvider();
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    googleProvider = new GoogleAuthProvider();
+  } catch (error) {
+    console.error("Firebase Initialization Error:", error);
+    // Fallback to avoid crash if config is invalid but apiKey was changed
+    app = {} as any;
+    auth = {} as Auth;
+    db = {} as Firestore;
+    googleProvider = {} as GoogleAuthProvider;
+  }
 } else {
-  // Export mock/empty objects so imports don't fail, but they shouldn't be used
-  // because AuthContext checks isFirebaseReady
+  // Mock objects for Demo Mode
   app = {} as any;
   auth = {} as Auth;
+  db = {} as Firestore;
   googleProvider = {} as GoogleAuthProvider;
 }
 
-export { auth, googleProvider };
+export { auth, googleProvider, db };
 export default app;
